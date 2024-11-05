@@ -1,0 +1,137 @@
+import javax.swing.*;
+import java.util.LinkedList;
+import java.util.Stack;
+
+public class JavaApplication10 {
+
+  
+    private static LinkedList<String> todoList = new LinkedList<>();
+    private static LinkedList<String> completedTasks = new LinkedList<>();
+
+    private static Stack<String> undoStack = new Stack<>();
+    
+    public static void main(String[] args) {
+        boolean running = true;
+        
+        while (running) {
+            String menu = "--- To-Do List  ---\n"
+                        + "1. Add Task\n"
+                        + "2. Mark Task as Done\n"
+                        + "3. Undo\n"
+                        + "4. View To-Do List\n"
+                        + "5. View Completed Tasks\n"
+                        + "6. Exit";
+            String choiceStr = JOptionPane.showInputDialog(menu);
+            int choice;
+            try {
+                choice = Integer.parseInt(choiceStr);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Invalid input. Please enter a number.");
+                continue;
+            }
+
+            switch (choice) {
+                case 1:
+                    addTask();
+                    break;
+                case 2:
+                    markTaskAsDone();
+                    break;
+                case 3:
+                    undoLastAction();
+                    break;
+                case 4:
+                    viewTodoList();
+                    break;
+                case 5:
+                    viewCompletedTasks();
+                    break;
+                case 6:
+                    JOptionPane.showMessageDialog(null, "Exiting program. Goodbye!");
+                    running = false;
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Invalid choice. Please try again.");
+            }
+        }
+    }
+    private static void addTask() {
+        String task = JOptionPane.showInputDialog("Enter the task to add:");
+        if (task != null && !task.trim().isEmpty()) {
+            todoList.add(task);
+            undoStack.push("add:" + task);
+            JOptionPane.showMessageDialog(null, "Task added: " + task);
+        } else {
+            JOptionPane.showMessageDialog(null, "Task cannot be empty.");
+        }
+    }
+    private static void markTaskAsDone() {
+        if (todoList.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No tasks in the to-do list to mark as done.");
+            return;
+        }
+
+        StringBuilder tasks = new StringBuilder("Current To-Do List:\n");
+        for (int i = 0; i < todoList.size(); i++) {
+            tasks.append((i + 1)).append(". ").append(todoList.get(i)).append("\n");
+        }
+
+        String taskNumberStr = JOptionPane.showInputDialog(tasks + "Enter the task number to mark as done:");
+        try {
+            int taskIndex = Integer.parseInt(taskNumberStr) - 1;
+            if (taskIndex >= 0 && taskIndex < todoList.size()) {
+                String task = todoList.remove(taskIndex);
+                completedTasks.add(task);
+                undoStack.push("done:" + task);
+                JOptionPane.showMessageDialog(null, "Task marked as done: " + task);
+            } else {
+                JOptionPane.showMessageDialog(null, "Invalid task number.");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Invalid input. Please enter a number.");
+        }
+    }
+
+    private static void undoLastAction() {
+        if (undoStack.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No actions to undo.");
+            return;
+        }
+
+        String lastAction = undoStack.pop();
+
+        if (lastAction.startsWith("add:")) {
+            String task = lastAction.substring(4);
+            todoList.remove(task);
+            JOptionPane.showMessageDialog(null, "Undo add action: Task removed: " + task);
+        } else if (lastAction.startsWith("done:")) {
+            String task = lastAction.substring(5);
+            completedTasks.remove(task);
+            todoList.add(task);
+            JOptionPane.showMessageDialog(null, "Undo done action: Task moved back to To-Do List: " + task);
+        }
+    }
+    private static void viewTodoList() {
+        if (todoList.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "To-Do List is empty.");
+        } else {
+            StringBuilder tasks = new StringBuilder("To-Do List:\n");
+            for (int i = 0; i < todoList.size(); i++) {
+                tasks.append((i + 1)).append(". ").append(todoList.get(i)).append("\n");
+            }
+            JOptionPane.showMessageDialog(null, tasks.toString());
+        }
+    }
+
+    private static void viewCompletedTasks() {
+        if (completedTasks.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No tasks completed yet.");
+        } else {
+            StringBuilder tasks = new StringBuilder("Completed Tasks:\n");
+            for (int i = 0; i < completedTasks.size(); i++) {
+                tasks.append((i + 1)).append(". ").append(completedTasks.get(i)).append("\n");
+            }
+            JOptionPane.showMessageDialog(null, tasks.toString());
+        }
+    }
+}
